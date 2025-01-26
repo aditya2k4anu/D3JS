@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Scatter Plot with D3.js</title>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <style>
+    .dot {
+      fill: steelblue;
+      stroke: black;
+      stroke-width: 1px;
+    }
+    .axis-label {
+      font-size: 12px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div id="chart"></div>
+  <script>
+    // Step 1: Define the data
+    const data = [
+      { x: 5, y: 20 },
+      { x: 10, y: 35 },
+      { x: 15, y: 50 },
+      { x: 20, y: 75 },
+      { x: 25, y: 30 },
+      { x: 30, y: 90 },
+      { x: 35, y: 55 },
+      { x: 40, y: 70 },
+    ];
+
+    // Step 2: Set chart dimensions and margins
+    const width = 500;
+    const height = 300;
+    const margin = { top: 20, right: 30, bottom: 40, left: 50 };
+
+    // Step 3: Create an SVG container
+    const svg = d3.select("#chart")
+      .append("svg")
+      .attr("width", width + margin.left + margin.right)
+      .attr("height", height + margin.top + margin.bottom)
+      .append("g")
+      .attr("transform", `translate(${margin.left}, ${margin.top})`);
+
+    // Step 4: Create scales
+    const xScale = d3.scaleLinear()
+      .domain([0, d3.max(data, d => d.x) + 5]) // Add padding to domain
+      .range([0, width]);
+
+    const yScale = d3.scaleLinear()
+      .domain([0, d3.max(data, d => d.y) + 10]) // Add padding to domain
+      .range([height, 0]); // Invert for SVG coordinates
+
+    // Step 5: Add axes
+    const xAxis = d3.axisBottom(xScale);
+    const yAxis = d3.axisLeft(yScale);
+
+    svg.append("g")
+      .attr("transform", `translate(0, ${height})`) // Move to bottom
+      .call(xAxis);
+
+    svg.append("g")
+      .call(yAxis);
+
+    // Step 6: Add labels
+    svg.append("text")
+      .attr("x", width / 2)
+      .attr("y", height + margin.bottom - 5)
+      .attr("text-anchor", "middle")
+      .attr("class", "axis-label")
+      .text("X Axis Label");
+
+    svg.append("text")
+      .attr("x", -height / 2)
+      .attr("y", -margin.left + 15)
+      .attr("text-anchor", "middle")
+      .attr("transform", "rotate(-90)")
+      .attr("class", "axis-label")
+      .text("Y Axis Label");
+
+    // Step 7: Draw dots
+    svg.selectAll(".dot")
+      .data(data)
+      .enter()
+      .append("circle")
+      .attr("class", "dot")
+      .attr("cx", d => xScale(d.x)) // X position
+      .attr("cy", d => yScale(d.y)) // Y position
+      .attr("r", 5); // Radius
+  </script>
+</body>
+</html>

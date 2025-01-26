@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simple Chord Diagram</title>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+<body>
+  <script>
+    // Data input: A square matrix where values represent relationships between groups
+    const matrix = [
+      [0, 5, 10, 15], // Group 1's relationships
+      [5, 0, 20, 25], // Group 2's relationships
+      [10, 20, 0, 35], // Group 3's relationships
+      [15, 25, 35, 0], // Group 4's relationships
+    ];
+
+    const groupNames = ["A", "B", "C", "D"]; // Names of the groups
+
+    // Chart dimensions
+    const width = 600;
+    const height = 600;
+    const innerRadius = Math.min(width, height) * 0.4;
+    const outerRadius = innerRadius + 10;
+
+    // Create an SVG container
+    const svg = d3.select("body")
+                  .append("svg")
+                  .attr("width", width)
+                  .attr("height", height)
+                  .append("g")
+                  .attr("transform", `translate(${width / 2}, ${height / 2})`);
+
+    // Create the chord layout
+    const chord = d3.chord()
+                    .padAngle(0.05) // Padding between groups
+                    .sortSubgroups(d3.descending); // Sort subgroups by size
+
+    const chords = chord(matrix);
+
+    // Create an arc generator for the outer arcs (groups)
+    const arc = d3.arc()
+                  .innerRadius(innerRadius)
+                  .outerRadius(outerRadius);
+
+    // Create a ribbon generator for the chords
+    const ribbon = d3.ribbon()
+                     .radius(innerRadius);
+
+    // Create a color scale for groups
+    const color = d3.scaleOrdinal(d3.schemeCategory10);
+
+    // Draw the group arcs
+    const group = svg.append("g")
+                     .selectAll("g")
+                     .data(chords.groups)
+                     .enter()
+                     .append("g");
+
+    group.append("path")
+         .attr("d", arc)
+         .attr("fill", d => color(d.index))
+         .attr("stroke", "black");
+
+    // Add group labels
+    group.append("text")
+         .each(d => (d.angle = (d.startAngle + d.endAngle) / 2))
+         .attr("dy", ".35em")
+         .attr("transform", d => `
+           rotate(${(d.angle * 180 / Math.PI - 90)})
+           translate(${outerRadius + 10})
+           ${d.angle > Math.PI ? "rotate(180)" : ""}
+         `)
+         .attr("text-anchor", d => (d.angle > Math.PI ? "end" : null))
+         .text((d, i) => groupNames[i]);
+
+    // Draw the ribbons (chords)
+    svg.append("g")
+       .selectAll("path")
+       .data(chords)
+       .enter()
+       .append("path")
+       .attr("d", ribbon)
+       .attr("fill", d => color(d.target.index))
+       .attr("stroke", "black");
+  </script>
+</body>
+</html>
