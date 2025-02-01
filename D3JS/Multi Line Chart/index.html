@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Multi-Line Chart</title>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <style>
+    .line {
+      fill: none;
+      stroke-width: 2;
+    }
+    .axis path, .axis line {
+      fill: none;
+      shape-rendering: crispEdges;
+    }
+  </style>
+</head>
+<body>
+  <script>
+    // Sample data array (arr)
+    const arr = [
+      { name: "Series 1", values: [{ x: 1, y: 10 }, { x: 2, y: 20 }, { x: 3, y: 15 }] },
+      { name: "Series 2", values: [{ x: 1, y: 5 }, { x: 2, y: 10 }, { x: 3, y: 25 }] },
+      { name: "Series 3", values: [{ x: 1, y: 15 }, { x: 2, y: 25 }, { x: 3, y: 20 }] }
+    ];
+
+    // Set dimensions and margins for the chart
+    const margin = { top: 20, right: 30, bottom: 30, left: 40 },
+          width = 600 - margin.left - margin.right,
+          height = 400 - margin.top - margin.bottom;
+
+    // Append SVG to the body
+    const svg = d3.select("body")
+                  .append("svg")
+                  .attr("width", width + margin.left + margin.right)
+                  .attr("height", height + margin.top + margin.bottom)
+                  .append("g")
+                  .attr("transform", `translate(${margin.left},${margin.top})`);
+
+    // Create scales
+    const xScale = d3.scaleLinear()
+                     .domain([1, d3.max(arr[0].values, d => d.x)]) // Assume all series have the same x range
+                     .range([0, width]);
+
+    const yScale = d3.scaleLinear()
+                     .domain([0, d3.max(arr.flatMap(d => d.values), d => d.y)]) // Max y across all series
+                     .range([height, 0]);
+
+    // Create axes
+    const xAxis = d3.axisBottom(xScale).ticks(5);
+    const yAxis = d3.axisLeft(yScale).ticks(5);
+
+    // Add x-axis
+    svg.append("g")
+       .attr("transform", `translate(0, ${height})`)
+       .call(xAxis);
+
+    // Add y-axis
+    svg.append("g")
+       .call(yAxis);
+
+    // Create line generator
+    const line = d3.line()
+                   .x(d => xScale(d.x))
+                   .y(d => yScale(d.y));
+
+    // Define colors
+    const color = d3.scaleOrdinal(d3.schemeCategory10);
+
+    // Add lines
+    svg.selectAll(".line")
+       .data(arr)
+       .enter()
+       .append("path")
+       .attr("class", "line")
+       .attr("d", d => line(d.values))
+       .attr("stroke", (d, i) => color(i))
+       .attr("stroke-width", 2)
+       .attr("fill", "none");
+
+    // Add legend
+    const legend = svg.selectAll(".legend")
+                      .data(arr)
+                      .enter()
+                      .append("g")
+                      .attr("transform", (d, i) => `translate(0, ${i * 20})`);
+
+    legend.append("rect")
+          .attr("x", width + 10)
+          .attr("width", 10)
+          .attr("height", 10)
+          .attr("fill", (d, i) => color(i));
+
+    legend.append("text")
+          .attr("x", width + 25)
+          .attr("y", 10)
+          .text(d => d.name)
+          .attr("font-size", "12px")
+          .attr("alignment-baseline", "middle");
+  </script>
+</body>
+</html>

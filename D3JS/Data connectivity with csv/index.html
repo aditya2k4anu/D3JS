@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic Data with D3.js and CSV</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+<body>
+    <h2>Dynamic Data Visualization using D3.js</h2>
+    <button onclick="renderData()">Reload Data</button> <!-- Button to manually reload data -->
+    <svg width="600" height="400" id="svg"></svg>
+
+    <script>
+        // Function to load the CSV and render dynamic data
+        function renderData() {
+            // Load the CSV file using D3
+            d3.csv("Data connectivity with csv/data1.csv").then(function(data) {
+                // Select the SVG element
+                const svg = d3.select("#svg");
+
+                // Clear any existing content
+                svg.selectAll("*").remove();
+
+                // Set up a scale for positioning circles
+                const xScale = d3.scaleLinear()
+                                 .domain([0, d3.max(data, d => +d.x)])
+                                 .range([0, 600]);
+
+                const yScale = d3.scaleLinear()
+                                 .domain([0, d3.max(data, d => +d.y)])
+                                 .range([400, 0]);
+
+                // Create circles dynamically based on CSV data
+                svg.selectAll("circle")
+                    .data(data)
+                    .enter()
+                    .append("circle")
+                    .attr("cx", d => xScale(+d.x))  // Position based on CSV data
+                    .attr("cy", d => yScale(+d.y))
+                    .attr("r", 10)
+                    .attr("fill", "steelblue")
+                    .attr("opacity", 0.7);
+
+                // Optional: Add labels or tooltips
+                svg.selectAll("text")
+                    .data(data)
+                    .enter()
+                    .append("text")
+                    .attr("x", d => xScale(+d.x))
+                    .attr("y", d => yScale(+d.y) - 15)
+                    .attr("text-anchor", "middle")
+                    .attr("font-size", "12px")
+                    .text(d => `(${d.x}, ${d.y})`);
+            });
+        }
+
+        // Initially render the data when the page loads
+        renderData();
+
+        // Optional: Automatically reload the data every 5 seconds
+        setInterval(renderData, 5000);  // Reload every 5 seconds for dynamic updates
+    </script>
+</body>
+</html>

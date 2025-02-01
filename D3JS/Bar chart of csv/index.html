@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>D3 Bar Chart</title>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <style>
+    .bar {
+      fill: steelblue;
+    }
+    .bar:hover {
+      fill: orange;
+    }
+    .axis-label {
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+  <h1>D3 Bar Chart Example</h1>
+  <svg width="800" height="400"></svg>
+
+  <script>
+    // Set dimensions and margins
+    const margin = { top: 20, right: 30, bottom: 40, left: 40 },
+          width = 800 - margin.left - margin.right,
+          height = 400 - margin.top - margin.bottom;
+
+    const svg = d3.select("svg")
+      .attr("width", width + margin.left + margin.right)
+      .attr("height", height + margin.top + margin.bottom)
+      .append("g")
+      .attr("transform", `translate(${margin.left},${margin.top})`);
+
+    // Load data from CSV
+    d3.csv("data.csv").then(data => {
+      // Parse the data
+      data.forEach(d => {
+        d.Value = +d.Value; // Convert Value to a number
+      });
+
+      // Define scales
+      const x = d3.scaleBand()
+        .domain(data.map(d => d.Category))
+        .range([0, width])
+        .padding(0.1);
+
+      const y = d3.scaleLinear()
+        .domain([0, d3.max(data, d => d.Value)])
+        .nice()
+        .range([height, 0]);
+
+      // Add X-axis
+      svg.append("g")
+        .attr("transform", `translate(0,${height})`)
+        .call(d3.axisBottom(x))
+        .selectAll("text")
+        .attr("class", "axis-label");
+
+      // Add Y-axis
+      svg.append("g")
+        .call(d3.axisLeft(y))
+        .selectAll("text")
+        .attr("class", "axis-label");
+
+      // Add bars
+      svg.selectAll(".bar")
+        .data(data)
+        .join("rect")
+        .attr("class", "bar")
+        .attr("x", d => x(d.Category))
+        .attr("y", d => y(d.Value))
+        .attr("width", x.bandwidth())
+        .attr("height", d => height - y(d.Value));
+
+      // Add labels
+      svg.selectAll(".label")
+        .data(data)
+        .join("text")
+        .attr("class", "label")
+        .attr("x", d => x(d.Category) + x.bandwidth() / 2)
+        .attr("y", d => y(d.Value) - 5)
+        .attr("text-anchor", "middle")
+        .text(d => d.Value);
+    }).catch(error => console.error("Error loading the data:", error));
+  </script>
+</body>
+</html>

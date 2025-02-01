@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Graph with Labels</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+
+        svg {
+            border: 1px solid #ccc;
+        }
+
+        .axis-label {
+            font-size: 14px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>Graph with Labels</h1>
+    <svg width="600" height="400" id="svg"></svg>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // Fetch data from Flask backend
+            fetch('http://127.0.0.1:5000/data')
+                .then(response => response.json())
+                .then(data => {
+                    const svg = d3.select("#svg");
+                    const width = 600;
+                    const height = 400;
+                    const margin = { top: 50, right: 50, bottom: 50, left: 50 };
+
+                    const xScale = d3.scaleLinear()
+                        .domain([0, d3.max(data, d => d.x)])
+                        .range([margin.left, width - margin.right]);
+
+                    const yScale = d3.scaleLinear()
+                        .domain([0, d3.max(data, d => d.y)])
+                        .range([height - margin.bottom, margin.top]);
+
+                    const xAxis = d3.axisBottom(xScale).ticks(5);
+                    const yAxis = d3.axisLeft(yScale).ticks(5);
+
+                    // Add axes
+                    svg.append("g")
+                        .attr("transform", `translate(0,${height - margin.bottom})`)
+                        .call(xAxis);
+
+                    svg.append("g")
+                        .attr("transform", `translate(${margin.left},0)`)
+                        .call(yAxis);
+
+                    // Add circles
+                    svg.selectAll("circle")
+                        .data(data)
+                        .enter()
+                        .append("circle")
+                        .attr("cx", d => xScale(d.x))
+                        .attr("cy", d => yScale(d.y))
+                        .attr("r", 5)
+                        .attr("fill", "steelblue");
+
+                    // Add x-axis label
+                    svg.append("text")
+                        .attr("class", "axis-label")
+                        .attr("x", width / 2)
+                        .attr("y", height - 10)
+                        .attr("text-anchor", "middle")
+                        .text("X-Axis Label");
+
+                    // Add y-axis label
+                    svg.append("text")
+                        .attr("class", "axis-label")
+                        .attr("transform", "rotate(-90)")
+                        .attr("x", -height / 2)
+                        .attr("y", 20)
+                        .attr("text-anchor", "middle")
+                        .text("Y-Axis Label");
+
+                    // Add title
+                    svg.append("text")
+                        .attr("x", width / 2)
+                        .attr("y", margin.top / 2)
+                        .attr("text-anchor", "middle")
+                        .attr("font-size", "16px")
+                        .attr("font-weight", "bold")
+                        .text("Dynamic Data Visualization");
+                })
+                .catch(error => console.error('Error fetching data:', error));
+        });
+    </script>
+</body>
+</html>

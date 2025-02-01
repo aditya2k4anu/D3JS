@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>D3.js Bar Chart with XML Data</title>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <style>
+    .bar {
+      fill: steelblue;
+    }
+    .bar:hover {
+      fill: orange;
+    }
+    text {
+      font-size: 12px;
+      text-anchor: middle;
+    }
+  </style>
+</head>
+<body>
+  <h1>D3.js Bar Chart with XML Data</h1>
+  <svg width="500" height="300"></svg>
+
+  <script>
+    // Load XML data
+    d3.xml("data.xml").then(xml => {
+      // Parse the XML data
+      const data = Array.from(xml.querySelectorAll("item")).map(item => ({
+        name: item.querySelector("name").textContent,
+        value: +item.querySelector("value").textContent
+      }));
+
+      // Chart dimensions
+      const width = 500;
+      const height = 300;
+      const margin = { top: 20, right: 20, bottom: 30, left: 40 };
+
+      const svg = d3.select("svg")
+        .attr("width", width)
+        .attr("height", height);
+
+      // Scales
+      const x = d3.scaleBand()
+        .domain(data.map(d => d.name))
+        .range([margin.left, width - margin.right])
+        .padding(0.1);
+
+      const y = d3.scaleLinear()
+        .domain([0, d3.max(data, d => d.value)]).nice()
+        .range([height - margin.bottom, margin.top]);
+
+      // Axes
+      svg.append("g")
+        .attr("transform", `translate(0,${height - margin.bottom})`)
+        .call(d3.axisBottom(x));
+
+      svg.append("g")
+        .attr("transform", `translate(${margin.left},0)`)
+        .call(d3.axisLeft(y));
+
+      // Bars
+      svg.selectAll(".bar")
+        .data(data)
+        .join("rect")
+        .attr("class", "bar")
+        .attr("x", d => x(d.name))
+        .attr("y", d => y(d.value))
+        .attr("width", x.bandwidth())
+        .attr("height", d => y(0) - y(d.value));
+
+      // Add text labels
+      svg.selectAll(".label")
+        .data(data)
+        .join("text")
+        .attr("class", "label")
+        .attr("x", d => x(d.name) + x.bandwidth() / 2)
+        .attr("y", d => y(d.value) - 5)
+        .text(d => d.value);
+    });
+  </script>
+</body>
+</html>

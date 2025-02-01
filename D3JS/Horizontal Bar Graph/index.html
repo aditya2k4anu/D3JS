@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Horizontal Bar Chart with Scale</title>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+<body>
+  <script>
+    // Sample data array
+    const data = [
+      { name: "A", value: 30 },
+      { name: "B", value: 80 },
+      { name: "C", value: 45 },
+      { name: "D", value: 60 },
+      { name: "E", value: 20 },
+    ];
+
+    // Chart dimensions
+    const width = 500, height = 300, barHeight = 30, margin = { top: 20, right: 20, bottom: 40, left: 40 };
+
+    // Create SVG container
+    const svg = d3.select("body")
+                  .append("svg")
+                  .attr("width", width + margin.left + margin.right)
+                  .attr("height", height + margin.top + margin.bottom);
+
+    // Create a group for the chart
+    const chartGroup = svg.append("g")
+                          .attr("transform", `translate(${margin.left}, ${margin.top})`);
+
+    // Scales
+    const xScale = d3.scaleLinear()
+                     .domain([0, d3.max(data, d => d.value)]) // Input domain
+                     .range([0, width]); // Output range
+
+    const yScale = d3.scaleBand()
+                     .domain(data.map(d => d.name)) // Names for each bar
+                     .range([0, data.length * barHeight])
+                     .padding(0.1); // Add some spacing
+
+    // Add x-axis
+    const xAxis = d3.axisBottom(xScale);
+    chartGroup.append("g")
+              .attr("transform", `translate(0, ${data.length * barHeight})`)
+              .call(xAxis);
+
+    // Draw bars
+    chartGroup.selectAll("rect")
+              .data(data)
+              .enter()
+              .append("rect")
+              .attr("y", d => yScale(d.name))
+              .attr("height", yScale.bandwidth())
+              .attr("width", d => xScale(d.value))
+              .attr("fill", "steelblue");
+
+    // Add text labels inside bars
+    chartGroup.selectAll("text")
+              .data(data)
+              .enter()
+              .append("text")
+              .attr("y", d => yScale(d.name) + yScale.bandwidth() / 2)
+              .attr("x", d => xScale(d.value) - 5)
+              .attr("dy", ".35em")
+              .attr("text-anchor", "end")
+              .attr("fill", "white")
+              .text(d => d.value);
+  </script>
+</body>
+</html>

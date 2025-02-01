@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>D3 Bar Chart</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        .bar {
+            fill: steelblue;
+        }
+        .bar:hover {
+            fill: orange;
+        }
+        .axis path,
+        .axis line {
+            fill: none;
+            shape-rendering: crispEdges;
+        }
+    </style>
+</head>
+<body>
+    <h1>Simple D3 Bar Chart</h1>
+    <svg width="600" height="400"></svg>
+
+    <script>
+        // Load data from CSV
+        d3.csv("C:/Users/adity/OneDrive - Noida Institute of Engineering and Technology/Desktop/D3JS/D3 using csv/data.csv").then(function(data) {
+            // Convert values to numbers
+            data.forEach(d => {
+                d.value = +d.value;
+            });
+
+            // Set chart dimensions
+            const width = 600;
+            const height = 400;
+            const margin = { top: 20, right: 30, bottom: 40, left: 50 };
+
+            const svg = d3.select("svg")
+                .attr("width", width)
+                .attr("height", height);
+
+            const x = d3.scaleBand()
+                .domain(data.map(d => d.name))
+                .range([margin.left, width - margin.right])
+                .padding(0.1);
+
+            const y = d3.scaleLinear()
+                .domain([0, d3.max(data, d => d.value)])
+                .nice()
+                .range([height - margin.bottom, margin.top]);
+
+            svg.append("g")
+                .selectAll("rect")
+                .data(data)
+                .join("rect")
+                .attr("class", "bar")
+                .attr("x", d => x(d.name))
+                .attr("y", d => y(d.value))
+                .attr("height", d => y(0) - y(d.value))
+                .attr("width", x.bandwidth());
+
+            svg.append("g")
+                .attr("transform", `translate(0,${height - margin.bottom})`)
+                .call(d3.axisBottom(x))
+                .attr("font-size", "12px");
+
+            svg.append("g")
+                .attr("transform", `translate(${margin.left},0)`)
+                .call(d3.axisLeft(y))
+                .attr("font-size", "12px");
+        });
+    </script>
+</body>
+</html>
